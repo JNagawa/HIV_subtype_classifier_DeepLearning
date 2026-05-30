@@ -61,46 +61,60 @@ def generate():
         "Severe Bias: Subtype B heavily dominates the final dataset (52.2%)."
     ])
 
-    # 4. Processing & Class Balancing (Two Columns)
-    slide_layout = prs.slide_layouts[3] # Two content layout
+    # 4. Processing & Encoding
+    slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
-    slide.shapes.title.text = "Methodology: Processing & Class Balancing"
+    slide.shapes.title.text = "Methodology: Processing & Encoding"
     
-    # Left Column
-    left_box = slide.placeholders[1]
-    left_tf = left_box.text_frame
-    left_tf.text = "Gap Splitting & Encoding"
+    content_box = slide.placeholders[1]
+    tf = content_box.text_frame
     for text in [
-        "Alignment gaps ('-') completely stripped. Sequences padded to 3000bp.",
-        "Before: 'A-T-C' -> After: 'ATC' -> [1, 4, 2, 0...]",
-        "One-Hot Encoding: Used for MLP and 1D-CNN.",
-        "Label Embedding: Integer mapping used for BiLSTM."
+        "Gap Stripping: Alignment gaps ('-') completely removed.",
+        "Padding: Unaligned sequences padded/truncated to uniform 3000bp.",
+        "One-Hot Encoding: Matrix [L x 4] for spatial models (CNN, MLP).",
+        "Label Embedding: Integer mapping for sequential models (BiLSTM)."
     ]:
-        p = left_tf.add_paragraph()
+        p = tf.add_paragraph()
         p.text = f"• {text}"
         p.font.size = Pt(16)
         
+    # Table illustrating encoding
+    table_shape = slide.shapes.add_table(3, 3, Inches(0.5), Inches(3.0), Inches(4.5), Inches(1.5))
+    table = table_shape.table
+    table.cell(0, 0).text, table.cell(0, 1).text, table.cell(0, 2).text = "Raw Sequence", "Cleaned Sequence", "Integer Encoding"
+    table.cell(1, 0).text, table.cell(1, 1).text, table.cell(1, 2).text = "A-T-C--G", "ATCG", "[1, 4, 2, 3]"
+    table.cell(2, 0).text, table.cell(2, 1).text, table.cell(2, 2).text = "T--C-A-N", "TCAN", "[4, 2, 1, 0]"
+    for row in table.rows:
+        for cell in row.cells:
+            for p in cell.text_frame.paragraphs:
+                p.font.size = Pt(14)
+                p.font.bold = True
+                
     filepath_len = os.path.join(FIGURES_DIR, "sequence_lengths.png")
     if os.path.exists(filepath_len):
-        slide.shapes.add_picture(filepath_len, Inches(0.5), Inches(4.5), width=Inches(4.0))
+        slide.shapes.add_picture(filepath_len, Inches(5.2), Inches(2.0), width=Inches(4.5))
 
-    # Right Column
-    right_box = slide.placeholders[2]
-    right_tf = right_box.text_frame
-    right_tf.text = "Addressing Class Imbalance"
+    # 5. Data Splitting & Class Balancing
+    slide_layout = prs.slide_layouts[1]
+    slide = prs.slides.add_slide(slide_layout)
+    slide.shapes.title.text = "Methodology: Data Splitting & Class Balancing"
+    
+    content_box = slide.placeholders[1]
+    tf = content_box.text_frame
     for text in [
-        "Subtype B severely dominates the data.",
-        "Standard cross-entropy caused precision collapse.",
-        "Solution: Pure Focal Loss (Gamma=2.0).",
+        "Stratified Split: Data divided into 70% Train, 15% Val, and 15% Test.",
+        "Class Imbalance: Subtype B severely dominates the data (>52%).",
+        "Standard cross-entropy caused precision collapse in minority classes.",
+        "Solution: Pure Focal Loss (Gamma=2.0) applied natively in PyTorch.",
         "Forces gradient to focus on hard-to-predict minority strains (A, C, D)."
     ]:
-        p = right_tf.add_paragraph()
+        p = tf.add_paragraph()
         p.text = f"• {text}"
         p.font.size = Pt(16)
         
     filepath_dist = os.path.join(FIGURES_DIR, "subtype_distribution.png")
     if os.path.exists(filepath_dist):
-        slide.shapes.add_picture(filepath_dist, Inches(5.2), Inches(4.5), width=Inches(4.0))
+        slide.shapes.add_picture(filepath_dist, Inches(5.2), Inches(3.5), width=Inches(4.5))
 
     # 6. Experiments: Models & Architecture
     add_slide(prs, "Methodology: Architectures", [

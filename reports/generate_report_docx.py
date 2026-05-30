@@ -76,7 +76,8 @@ def generate():
     add_heading(doc, '4.1 Processing (Encoding)', 2)
     add_paragraph(doc, "Sequences were cleansed of alignment gap characters ('-'). Two encodings were utilized: One-hot encoding for the MLP and CNN models, and integer label embedding for the BiLSTM and Transformer models. All sequences were padded/truncated to a uniform length of 3000bp.")
 
-    add_heading(doc, '4.2 Class Balancing', 2)
+    add_heading(doc, '4.2 Data Splitting & Class Balancing', 2)
+    add_paragraph(doc, "Data was divided using a stratified split into 70% Train, 15% Validation, and 15% Test sets to ensure proportional subtype representation across all stages.")
     add_paragraph(doc, "Initial iterations utilizing standard categorical cross-entropy caused catastrophic collapse into the majority class (Subtype B). The pipeline implemented pure Focal Loss (gamma=2.0) to dynamically down-weight easily classified majority examples and force the optimizer to focus heavily on hard-to-predict minority strains.")
 
     add_heading(doc, '4.3 Experiments & Architectures', 2)
