@@ -5,7 +5,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation_v2.pptx')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation.pptx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
 def add_slide(prs, title, content=[], image_filename=None, image_width=5.0, image_left=4.5, image_top=1.5):
@@ -53,11 +53,13 @@ def generate():
     ])
 
     # 3. The Dataset
-    add_slide(prs, "The Dataset & Geographical Bias", [
-        "Data sourced from Los Alamos National Laboratory (LANL).",
-        "Severe Bias: Subtype B dominates North America & Europe (52.2% of data).",
-        "Sequence Length Variability: Shown in the plot, padded to 3000bp.",
-    ], image_filename="sequence_lengths.png", image_left=4.5)
+    add_slide(prs, "Data Acquisition (Kameris Experiment)", [
+        "Data was acquired by parsing 9,270 HIV-1 pol gene accessions utilized in the Kameris et al. experiment.",
+        "A JSON file was pulled from the Kameris GitHub repository to extract specific LANL sequence IDs.",
+        "These IDs were fed into the LANL HIV Sequence Database to batch download the raw FASTA sequences.",
+        "Sequences were then strictly filtered to our 4 target classes: Subtypes A, B, C, and D.",
+        "Severe Bias: Subtype B heavily dominates the final dataset (52.2%)."
+    ], image_filename="subtype_distribution.png", image_left=4.5)
 
     # 4. Processing Pipeline
     add_slide(prs, "Methodology: Processing & Encoding", [

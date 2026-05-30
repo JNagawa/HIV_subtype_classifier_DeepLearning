@@ -5,7 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'Final_Report_v2.docx')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'Final_Report.docx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
 def add_heading(doc, text, level):
@@ -64,11 +64,11 @@ def generate():
     add_heading(doc, '2. Introduction / Background', 1)
     add_paragraph(doc, "Human Immunodeficiency Virus Type 1 (HIV-1) exhibits extreme genetic diversity. The pol gene is clinically critical because it encodes the reverse transcriptase, protease, and integrase enzymes. Accurately identifying the viral subtype is essential for personalized medicine and epidemiological tracking. Traditional bioinformatics algorithms rely heavily on Multiple Sequence Alignment (MSA), a computationally expensive process. This project introduces an alignment-free deep learning pipeline designed to automatically extract phylogenetic features directly from raw nucleotide sequences.")
 
-    # 3. Dataset Description
-    add_heading(doc, '3. Dataset Description', 1)
-    add_paragraph(doc, "The dataset consists of HIV-1 pol gene sequences from the LANL HIV Sequence Database. A critical challenge is geographical bias. Subtype B dominates the dataset at ~52.2%, being the primary variant in North America and Western Europe. Subtypes A, C, and D are less represented. This severe class imbalance necessitated advanced loss optimization to prevent minority class suppression. The sequence lengths varied wildly before padding was applied.")
+    # 3. Dataset Description & Acquisition
+    add_heading(doc, '3. Dataset Description & Acquisition', 1)
+    add_paragraph(doc, "The sequences were acquired by parsing a JSON metadata file from the Kameris et al. GitHub repository, which contained exactly 9,270 HIV-1 pol gene accessions. These accessions were subsequently fed into the Los Alamos National Laboratory (LANL) HIV Sequence Database Search Interface to batch download the raw, unaligned FASTA sequences. The raw dataset contained minor subtypes and Circulating Recombinant Forms (CRFs), which were filtered out to isolate our 4 target classes: Subtypes A, B, C, and D.")
+    add_paragraph(doc, "A critical challenge within this filtered dataset is geographical bias. Subtype B dominates the dataset at ~52.2%, being the primary variant heavily sequenced in North America and Western Europe. Subtypes A, C, and D are severely underrepresented. This extreme class imbalance necessitated advanced loss optimization to prevent minority class suppression.")
     add_image_if_exists(doc, 'subtype_distribution.png', 4.5)
-    add_image_if_exists(doc, 'sequence_lengths.png', 4.5)
 
     # 4. Methodology
     add_heading(doc, '4. Methodology', 1)
