@@ -48,7 +48,7 @@ def create_table(doc, headers, rows):
 def generate():
     doc = Document()
     
-    title = doc.add_heading('Deep Learning for HIV-1 Subtype Classification: A BiLSTM and Focal Loss Approach to Analyzing pol Gene Sequences', 0)
+    title = doc.add_heading('Deep Learning for HIV-1 Subtype Classification: A BiLSTM and Focal Loss Approach', 0)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     doc.add_paragraph('Final Project - MSB7216: Deep Learning for Health Data').alignment = WD_ALIGN_PARAGRAPH.CENTER
     
@@ -67,8 +67,9 @@ def generate():
 
     # 3. Dataset Description
     add_heading(doc, '3. Dataset Description', 1)
-    add_paragraph(doc, "The dataset consists of HIV-1 pol gene sequences from the LANL HIV Sequence Database. A critical challenge is geographical bias. Subtype B dominates the dataset at ~52.2%, being the primary variant in North America and Western Europe. Subtypes A, C, and D are less represented. This severe class imbalance necessitated advanced loss optimization to prevent minority class suppression.")
+    add_paragraph(doc, "The dataset consists of HIV-1 pol gene sequences from the LANL HIV Sequence Database. A critical challenge is geographical bias. Subtype B dominates the dataset at ~52.2%, being the primary variant in North America and Western Europe. Subtypes A, C, and D are less represented. This severe class imbalance necessitated advanced loss optimization to prevent minority class suppression. The sequence lengths varied wildly before padding was applied.")
     add_image_if_exists(doc, 'subtype_distribution.png', 4.5)
+    add_image_if_exists(doc, 'sequence_lengths.png', 4.5)
 
     # 4. Methodology
     add_heading(doc, '4. Methodology', 1)
@@ -79,10 +80,10 @@ def generate():
     add_heading(doc, '4.2 Class Balancing', 2)
     add_paragraph(doc, "Initial iterations utilizing standard categorical cross-entropy caused catastrophic collapse into the majority class (Subtype B). The pipeline implemented pure Focal Loss (gamma=2.0) to dynamically down-weight easily classified majority examples and force the optimizer to focus heavily on hard-to-predict minority strains.")
 
-    add_heading(doc, '4.3 Experiments', 2)
-    add_paragraph(doc, "1. Baseline MLP: Global Average Pooling to evaluate global nucleotide composition.")
-    add_paragraph(doc, "2. Deep Learning (1D-CNN): Convolutional networks designed to extract localized spatial motifs (k-mers).")
-    add_paragraph(doc, "3. Deep Learning (BiLSTM): Designed to process sequence context bidirectionally to capture long-range biological dependencies.")
+    add_heading(doc, '4.3 Experiments & Architectures', 2)
+    add_paragraph(doc, "1. Baseline MLP (Approx. 73.8k Parameters): Global Average Pooling feeding into a 16-neuron dense layer with Dropout. Evaluates global nucleotide composition.")
+    add_paragraph(doc, "2. 1D-CNN (Approx. 200k Parameters): Convolutional networks designed to extract localized spatial motifs (k-mers). Architecture: Four Conv1d layers (filters increasing from 32 to 128, kernel sizes decreasing from 7 to 3), alternating with MaxPool and Dropout (0.5), ending in an AdaptiveAvgPool1d and a 64-neuron Dense layer.")
+    add_paragraph(doc, "3. BiLSTM (Approx. 2.1M Parameters): Designed to process sequence context bidirectionally to capture long-range biological dependencies. Architecture: Embedding Layer (128-dim), followed by a 2-layer Bidirectional LSTM (256 hidden units), ending in a 128-neuron Dense classifier with heavy Dropout (0.3).")
 
     add_heading(doc, '4.4 Explainability', 2)
     add_paragraph(doc, "A Universal Saliency Map was implemented using Input-Gradient Attention to visualize model confidence. The algorithm plotted high-resolution attention maps over the DNA sequence to highlight exact biological regions driving the classification, successfully bypassing CNN-only limitations.")
@@ -91,11 +92,11 @@ def generate():
     add_paragraph(doc, "A dynamic model-factory system automatically parses training histories, identifies the best architecture, loads the trained checkpoint natively, and exposes an inference pipeline.")
 
     add_heading(doc, '4.6 Transfer Learning', 2)
-    add_paragraph(doc, "An exploratory phase utilized DNABERT, a Transformer pre-trained on the human genome, fine-tuned for HIV subtyping to test cross-domain knowledge transfer.")
+    add_paragraph(doc, "An exploratory phase utilized DNABERT, a Transformer pre-trained on the human genome, fine-tuned for HIV subtyping to test cross-domain knowledge transfer. Due to the massive parameter count (100M+), sequence truncation and heavy gradient accumulation were required.")
 
     # 5. Results
     add_heading(doc, '5. Results', 1)
-    add_paragraph(doc, "The BiLSTM achieved an impressive 94.73% accuracy. However, both the 1D-CNN and DNABERT collapsed entirely, predicting only the majority class (Subtype B) resulting in exactly 52.22% accuracy.")
+    add_paragraph(doc, "The BiLSTM achieved an impressive 94.73% accuracy. The Baseline MLP achieved 65.27%. However, both the 1D-CNN and DNABERT collapsed entirely, predicting only the majority class (Subtype B) resulting in exactly 52.22% accuracy.")
     
     headers = ['Model', 'Test Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1']
     rows = [
@@ -106,6 +107,11 @@ def generate():
     ]
     create_table(doc, headers, rows)
     
+    add_paragraph(doc, "The training curves illustrate how the Focal loss heavily penalized early instability, but the CNN ultimately failed to escape the local minima of predicting Subtype B.")
+    add_image_if_exists(doc, 'model_comparison_curves.png', 5.0)
+    
+    add_paragraph(doc, "The per-class metrics output directly from Notebook 5 confirms that the BiLSTM accurately learned the minority class boundaries, generating high precision across the board.")
+    add_image_if_exists(doc, 'best_model_per_class_metrics.png', 5.0)
     add_image_if_exists(doc, 'best_model_roc.png', 5.0)
     add_image_if_exists(doc, 'all_confusion_matrices.png', 6.0)
 

@@ -8,7 +8,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation.pptx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
-def add_slide(prs, title, content=[], image_filename=None):
+def add_slide(prs, title, content=[], image_filename=None, image_width=5.0, image_left=4.5, image_top=1.5):
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
     title_box = slide.shapes.title
@@ -30,7 +30,7 @@ def add_slide(prs, title, content=[], image_filename=None):
     if image_filename:
         filepath = os.path.join(FIGURES_DIR, image_filename)
         if os.path.exists(filepath):
-            slide.shapes.add_picture(filepath, Inches(4.5), Inches(1.5), width=Inches(5.0))
+            slide.shapes.add_picture(filepath, Inches(image_left), Inches(image_top), width=Inches(image_width))
         else:
             print(f"Warning: {image_filename} not found.")
 
@@ -56,15 +56,15 @@ def generate():
     add_slide(prs, "The Dataset & Geographical Bias", [
         "Data sourced from Los Alamos National Laboratory (LANL).",
         "Severe Bias: Subtype B dominates North America & Europe (52.2% of data).",
-        "Risk: Models inherently want to predict 'B' for everything to minimize loss.",
-    ], image_filename="subtype_distribution.png")
+        "Sequence Length Variability: Shown in the plot, padded to 3000bp.",
+    ], image_filename="sequence_lengths.png", image_left=4.5)
 
     # 4. Processing Pipeline
     add_slide(prs, "Methodology: Processing & Encoding", [
         "Alignment gaps ('-') completely stripped.",
         "1. One-Hot Encoding: Used for MLP and 1D-CNN.",
         "2. Label Embedding: Integers used for BiLSTM inputs."
-    ])
+    ], image_filename="subtype_distribution.png", image_left=4.5)
 
     # 5. Class Balancing Strategy
     add_slide(prs, "Methodology: Class Balancing", [
@@ -73,11 +73,11 @@ def generate():
         "Forces the gradient to focus heavily on hard-to-predict minority strains (A, C, D)."
     ])
 
-    # 6. Experiments: Models
-    add_slide(prs, "Methodology: The Experiments", [
-        "Baseline MLP: Global Average Pooling. Looks at total nucleotide composition.",
-        "1D-CNN: Extracts localized spatial motifs (k-mers).",
-        "BiLSTM: Bidirectional recurrent sequence processing. Captures long-range dependencies."
+    # 6. Experiments: Models & Architecture
+    add_slide(prs, "Methodology: Architectures", [
+        "1. Baseline MLP (73.8k Params): GlobalAvgPool -> Dense(16) -> Classifier.",
+        "2. 1D-CNN (200k Params): 4 Conv1D layers (filters: 32 to 128) alternating with MaxPool & Dropout (0.5).",
+        "3. BiLSTM (2.1M Params): 128-dim Embedding -> 2-layer Bidirectional LSTM (256 hidden) -> Dense(128)."
     ])
 
     # 7. Transfer Learning
@@ -85,7 +85,7 @@ def generate():
         "Exploratory phase utilizing DNABERT.",
         "Pre-trained on the human genome via Masked Language Modeling.",
         "Classification head fine-tuned to test cross-domain transfer learning to viral genomes."
-    ])
+    ], image_filename="dnabert_training_curves.png", image_left=4.5)
 
     # 8. Explainability
     add_slide(prs, "Methodology: Explainability", [
@@ -115,7 +115,12 @@ def generate():
     add_slide(prs, "Results: Confusion Matrices", [
         "BiLSTM accurately maps minority classes.",
         "CNN and DNABERT collapsed entirely (52.22% Subtype B baseline)."
-    ], image_filename="all_confusion_matrices.png")
+    ], image_filename="all_confusion_matrices.png", image_width=5.5, image_left=4.0)
+
+    # 10b. Results: ROC Curves
+    add_slide(prs, "Results: ROC Curves", [
+        "The Receiver Operating Characteristic confirms the BiLSTM's high true positive rate across all four classes.",
+    ], image_filename="best_model_roc.png", image_width=5.0, image_left=4.5)
 
     # 11. Error Analysis
     add_slide(prs, "Error Analysis", [
