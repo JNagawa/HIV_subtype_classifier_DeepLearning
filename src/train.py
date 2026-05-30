@@ -92,14 +92,17 @@ class FocalLoss(nn.Module):
         'mean', 'sum', or 'none'
     """
     
-    def __init__(self, gamma=2.0, reduction='mean'):
+    def __init__(self, alpha=None, gamma=2.0, reduction='mean'):
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.reduction = reduction
-        self.alpha = None
-        self.gamma = gamma
-        self.reduction = reduction
-        self.alpha = None
+        if alpha is not None:
+            if isinstance(alpha, (list, np.ndarray)):
+                self.alpha = torch.tensor(alpha, dtype=torch.float32)
+            else:
+                self.alpha = alpha
+        else:
+            self.alpha = None
     
     def forward(self, inputs, targets):
         """
@@ -216,7 +219,7 @@ def validate(model, val_loader, criterion, device):
 
 
 def train_model(model, train_loader, val_loader, num_classes,
-                num_epochs=50, learning_rate=1e-3,
+                class_weights=None, num_epochs=50, learning_rate=1e-3,
                 patience=10, save_dir='models', model_name='model',
                 device='cpu', loss_type='focal', focal_gamma=2.0):
     """
@@ -260,11 +263,15 @@ def train_model(model, train_loader, val_loader, num_classes,
     
     # Loss function selection
     if loss_type == 'focal':
-        criterion = FocalLoss(gamma=focal_gamma)
-        print(f"Loss: Focal Loss (gamma={focal_gamma}, pure unweighted)")
+        alpha = class_weights.to(device) if class_weights is not None else None
+        criterion = FocalLoss(alpha=alpha, gamma=focal_gamma)
+        print(f"Loss: Focal Loss (gamma={focal_gamma}, alpha={'class_weights' if alpha is not None else 'None'})")
     else:
-        criterion = nn.CrossEntropyLoss()
-        print(f"Loss: CrossEntropyLoss (pure unweighted)")
+        if class_weights is not None:
+            criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+        else:
+            criterion = nn.CrossEntropyLoss()
+        print(f"Loss: CrossEntropyLoss (weights={'yes' if class_weights is not None else 'no'})")
     
     # Optimizer
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)

@@ -4,10 +4,15 @@ data/raw/*.fa
 data/raw/*.fas
 data/processed/*.pkl
 data/processed/*.csv
+data/processed/*.pt
 
 # Model checkpoints
 models/*.pth
 models/*.pt
+
+# Logs
+logs/
+runs/
 
 # Python
 __pycache__/
@@ -25,6 +30,3 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-
-# TensorBoard logs
-logs/

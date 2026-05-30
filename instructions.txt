@@ -1,244 +1,39 @@
-MSB7216: Deep Learning for Health
-Data
-Final Project / Final Examination Instructions
-May 8, 2026
-1. Project Overview
-The final examination for this course will be an individual practical project focused on ap-
-plying deep learning techniques to solve a real-world problem in the biomedical, bioinformatics,
-or healthcare domain.
-Students are expected to demonstrate:
-• Understanding of deep learning concepts covered in class
-• Ability to work with real-world biomedical or healthcare datasets
-• Ability to design, train, evaluate, and interpret deep learning models
-• Reproducible experimentation and scientific reporting
-• Practical implementation and communication skills
-The project should reflect the standards of a small-scale research or applied AI project
-similar to industry or academic work.
-Possible application areas include:
-• Medical imaging
-• Bioinformatics
-• Clinical NLP
-• Computational biology
-• Public health AI
-• Genomics
-• Microscopy AI
-• Biomedical signal analysis
-• Digital health systems
-1
-2. Important Dates
-Activity
-Date
-Dataset submission for ap-
-proval
-15 May
-Project presentations
-30 May starting at 9:00 AM
-Final report submission
-30 May
-GitHub repository submission
-30 May
-3. Project Rules and Constraints
-1. This is an individual project.
-2. Students must submit the dataset link for approval by 15 May. Failure to obtain
-dataset approval may result in a fail.
-3. All work must be maintained in a public GitHub repository.
-4. Projects must use datasets within the:
-• healthcare
-• biomedical
-• clinical
-• public health
-• genomics
-• bioinformatics
-• medical imaging
-domains.
-5. Datasets from heavily explored platforms such as:
-• Kaggle
-• Zindi
-are discouraged unless strong justification is provided.
-6. Simply reproducing existing notebooks or tutorials is not acceptable.
-7. Students are encouraged to use:
-• transfer learning
-• explainability techniques
-• deployment tools
-• reproducible pipelines
-8. Ethical considerations must be discussed where applicable, especially for:
-• patient data
-• fairness
-• privacy
-2
-• bias
-9. Use of AI coding assistants is allowed for productivity purposes; however:
-• students must understand all submitted work
-• plagiarism is prohibited
-• copied solutions without understanding will receive penalties
-4. Dataset Requirements
-Datasets should:
-• Be relevant to health, medicine, biology, or bioinformatics
-• Preferably contain at least 1000 samples in raw form
-• Have sufficient documentation or metadata
-• Be legally usable for research or educational purposes
-5. Example Project Areas
-Project Area
-Modality
-Suggested Models
-Difficulty
-Malaria Detection
-Microscopy
-Im-
-ages
-CNNs, ResNet
-Medium
-Chest X-ray Classifica-
-tion
-Medical Imaging
-DenseNet, EfficientNet
-Medium
-ECG Arrhythmia De-
-tection
-Time Series
-CNNs, LSTMs
-Medium
-Tumor Segmentation
-Medical Imaging
-U-Net
-High
-Clinical NLP Classifica-
-tion
-Text
-Transformers, BERT
-Medium
-DNA Sequence Classifi-
-cation
-Sequence Data
-CNNs, Transformers
-High
-Drug Response Predic-
-tion
-Tabular
-+
-Ge-
-nomics
-Deep Neural Networks
-High
-Maternal Risk Predic-
-tion
-Tabular Data
-MLPs, XGBoost
-Medium
-Antimicrobial
-Resis-
-tance Prediction
-Genomics
-Deep Learning
-High
-Air Quality and Health
-Modeling
-Environmental
-Data
-LSTMs, MLPs
-Medium
-6. Required Technical Components
-Your project must include:
-• Data exploration and visualization
-• Data preprocessing
-3
-• Train/validation/test splitting
-• Baseline model
-• At least one deep learning model
-• Appropriate evaluation metrics
-• Error analysis
-• Interpretation of results
-• Discussion of limitations
-• Reproducibility
-Students are strongly encouraged to include:
-• Transfer learning
-• Explainability methods
-• Deployment/demo interfaces
-• Experiment tracking
-7. Recommended Technical Stack
-Suggested tools and frameworks include:
-• PyTorch
-• TensorFlow/Keras
-• MONAI
-• HuggingFace
-• OpenCV
-• scikit-learn
-• Weights & Biases
-• Streamlit
-• Gradio
-• CVAT
-• Roboflow
-4
-8. Deliverables
-Students must submit:
-1. Approved dataset link
-2. GitHub repository
-3. Jupyter/Colab notebooks
-4. Final report
-5. Presentation slides
-6. Optional deployment/demo
-Expected GitHub Structure
-project/
-data/
-notebooks/
-src/
-models/
-reports/
-figures/
-requirements.txt
-README.md
-9. Final Report Structure
-The report should be between 6–10 pages and include:
-1. Abstract
-2. Introduction
-3. Related Work
-4. Dataset Description
-5. Methodology
-6. Experiments
-7. Results
-8. Error Analysis
-9. Ethical Considerations
-10. Limitations
-11. Future Work
-12. Conclusion
-13. References
-5
-10. Presentation Guidelines
-• Presentation duration: 10–15 minutes
-• Focus on:
-– problem motivation
-– methodology
-– results
-– lessons learned
-• Do not overload slides with code.
-• Demonstrations are encouraged.
-• Presentations should tell a coherent technical story.
-11. Evaluation Rubric
-Component
-Marks
-Problem originality and relevance
-10
-Dataset quality and justification
-10
-Data preprocessing and exploration
-10
-Model implementation
-15
-Experimentation and evaluation
-15
-Results interpretation and analysis
-10
-Report quality
-10
-GitHub organization and reproducibility
-10
-Presentation quality
-5
-Deployment/demo (optional but rewarded)
-5
-Total
-100
-All the best with your projects.
-The goal is not only to build accurate models, but also to build meaningful, reproducible, and
-impactful AI systems for health.
-6
+# HIV Subtype Classifier: Execution Instructions
+
+Follow these steps exactly to run the complete data pipeline, from raw sequence acquisition to model deployment.
+
+### 1. Environment Setup
+It is highly recommended to run this project in a GPU-accelerated environment (like Google Colab or a local machine with an NVIDIA GPU).
+
+```bash
+# Clone the repository
+git clone https://github.com/YourUsername/hiv-subtype-classifier.git
+cd hiv-subtype-classifier
+
+# Install all required dependencies
+pip install -r requirements.txt
+```
+
+### 2. Pipeline Execution
+The project is divided into 7 sequential Jupyter Notebooks located in the `notebooks/` directory. You must run them in chronological order, as each notebook generates data and model artifacts required by the next.
+
+* **Notebook 01: Data Acquisition**
+  Run `01_data_acquisition_and_exploration.ipynb` to parse the LANL accession numbers and download the raw FASTA sequences to `data/raw/`.
+  
+* **Notebook 02: Preprocessing**
+  Run `02_preprocessing.ipynb`. This will clean the sequences, pad/truncate them to a uniform length, and serialize the data into PyTorch-ready tensors saved in `data/processed/`.
+
+* **Notebook 03: Baseline Model**
+  Run `03_baseline_model.ipynb` to train a simple Multilayer Perceptron (MLP) on the sequences.
+
+* **Notebook 04: Deep Learning**
+  Run `04_deep_learning_models.ipynb` to train the 1D-CNN and the BiLSTM. This notebook is computationally heavy and requires a GPU. It will save the best weights to the `models/` directory.
+
+* **Notebook 05: Evaluation**
+  Run `05_model_evaluation_and_comparisons.ipynb`. This notebook automatically loads all models, compares their precision/recall against the test set, and generates Universal Saliency Maps to explain the model's confidence visually.
+
+* **Notebook 06: Transfer Learning (Optional)**
+  Run `06_transfer_learning.ipynb` to download and fine-tune DNABERT (a Transformer pre-trained on the human genome). Warning: This requires substantial VRAM.
+
+* **Notebook 07: Deployment**
+  Run `07_deployment.ipynb`. This script acts as a mock production environment. It dynamically scans the `data/processed/training_histories.pkl` file, identifies the absolute best-performing architecture, loads its weights natively from `src/models.py`, and stands ready for inference.
