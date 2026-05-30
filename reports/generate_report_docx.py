@@ -5,7 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'Final_Report.docx')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'Final_Report_v2.docx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
 def add_heading(doc, text, level):
@@ -52,14 +52,13 @@ def generate():
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     doc.add_paragraph('Final Project - MSB7216: Deep Learning for Health Data').alignment = WD_ALIGN_PARAGRAPH.CENTER
     
-    # 1. Abstract
-    add_heading(doc, '1. Abstract', 1)
-    add_paragraph(doc, "Background: The HIV-1 pol gene is highly conserved and a primary target for antiretroviral therapy. Tracking epidemiological spread and drug resistance relies heavily on accurate viral subtyping.")
-    add_paragraph(doc, "Problem Statement: Traditional methods require complex multiple sequence alignments or k-mer counting, which struggle with hypervariable regions and extreme geographical data imbalances.")
-    add_paragraph(doc, "Objective: To develop a fully automated, alignment-free Deep Learning classifier to categorize raw nucleotide sequences into Subtypes A, B, C, and D.")
-    add_paragraph(doc, "Methods: Sequences were parsed, stripped of gaps, and encoded into integers and one-hot vectors. To combat severe class imbalance (Subtype B overrepresentation), we utilized a pure Focal Loss mechanism (Gamma=2.0). Models evaluated include a Baseline MLP, a 1D-CNN, and a Bidirectional LSTM (BiLSTM).")
-    add_paragraph(doc, "Results: The BiLSTM vastly outperformed other architectures, achieving 94.73% overall accuracy. The 1D-CNN and DNABERT models suffered from severe class collapse (predicting majority Subtype B at 52.22%).")
-    add_paragraph(doc, "Conclusion: BiLSTMs are highly effective at modeling raw, unaligned biological sequences, successfully extracting bidirectional contextual dependencies while resisting geographical imbalance collapse.")
+    # 1. Abstract & Overview
+    add_heading(doc, '1. Abstract & Overview', 1)
+    add_paragraph(doc, "Background: HIV-1 subtyping is essential for guiding antiretroviral therapy and tracking epidemiological spread, as different subtypes exhibit varying resistance profiles.")
+    add_paragraph(doc, "Previous Work: Existing bioinformatics tools heavily rely on computationally expensive Multiple Sequence Alignment (MSA) or manual k-mer feature engineering.")
+    add_paragraph(doc, "Problem Statement: MSA struggles with hypermutations and large gaps. Furthermore, genomic databases suffer from severe geographical class imbalance, making it difficult to train robust classifiers for minority subtypes.")
+    add_paragraph(doc, "Objective: To develop an automated, alignment-free Deep Learning classifier to categorize raw nucleotide sequences into Subtypes A, B, C, and D.")
+    add_paragraph(doc, "Significance: Eliminating the MSA bottleneck enables faster, more scalable, and highly accurate subtyping. By proving that bidirectional recurrent networks can natively learn phylogenetic features, this pipeline sets a foundation for real-time clinical deployment.")
 
     # 2. Introduction
     add_heading(doc, '2. Introduction / Background', 1)

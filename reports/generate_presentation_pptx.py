@@ -5,7 +5,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation.pptx')
+OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation_v2.pptx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
 def add_slide(prs, title, content=[], image_filename=None, image_width=5.0, image_left=4.5, image_top=1.5):
@@ -43,13 +43,13 @@ def generate():
     slide.shapes.title.text = "Deep Learning for HIV-1 Subtype Classification"
     slide.placeholders[1].text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
     
-    # 2. Abstract & Objective
-    add_slide(prs, "Abstract & Objective", [
-        "Background: HIV-1 subtyping is critical for tracking drug resistance.",
-        "Problem: Traditional MSA methods struggle with hypermutations.",
-        "Objective: Alignment-free Deep Learning pipeline for Subtypes A, B, C, D.",
-        "Methods: CNN and BiLSTM networks using Focal Loss.",
-        "Results: BiLSTM achieved 94.73% accuracy, resisting majority-class collapse."
+    # 2. Abstract & Overview
+    add_slide(prs, "Abstract & Overview", [
+        "Background: HIV-1 subtyping is essential for guiding antiretroviral therapy and tracking epidemiological spread.",
+        "Previous Work: Existing tools heavily rely on computationally expensive Multiple Sequence Alignment (MSA) or k-mer counting.",
+        "Problem Statement: MSA struggles with hypermutations, and genomic databases suffer from severe geographical class imbalance.",
+        "Objective: To develop an automated, alignment-free Deep Learning classifier to categorize raw nucleotide sequences into Subtypes A, B, C, and D.",
+        "Significance: Eliminating the MSA bottleneck enables faster, more scalable, and highly accurate subtyping for clinical deployment."
     ])
 
     # 3. The Dataset
