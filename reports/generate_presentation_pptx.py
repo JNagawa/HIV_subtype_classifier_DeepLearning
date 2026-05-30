@@ -45,20 +45,41 @@ def add_slide(prs, title, content=[], image_filename=None, image_width=5.0, imag
 def generate():
     prs = Presentation()
     
-    # 1. Title
+    # 1. Title Slide (Light Theme + Illustration)
     slide_layout = prs.slide_layouts[0]
     slide = prs.slides.add_slide(slide_layout)
+    
+    # Add a cool illustration from the notebooks to the title slide
+    filepath_cover = os.path.join(FIGURES_DIR, "mlp_decision_boundaries.png")
+    if os.path.exists(filepath_cover):
+        # Place it nicely on the title slide
+        slide.shapes.add_picture(filepath_cover, Inches(5.5), Inches(1.0), width=Inches(4.0))
+
     title = slide.shapes.title
     title.text = "Deep Learning for HIV-1 Subtype Classification"
-    title.text_frame.paragraphs[0].font.name = 'Segoe UI'
-    title.text_frame.paragraphs[0].font.bold = True
-    title.text_frame.paragraphs[0].font.color.rgb = RGBColor(20, 50, 90)
+    # Light background for title box
+    title.fill.solid()
+    title.fill.fore_color.rgb = RGBColor(240, 245, 250)
+    
+    # Text formatting
+    for p in title.text_frame.paragraphs:
+        p.font.name = 'Segoe UI'
+        p.font.bold = True
+        p.font.color.rgb = RGBColor(20, 50, 90) # Dark blue text
+        p.line_spacing = 1.2
+    
+    # Adjust position to not overlap the image
+    title.width = Inches(5.0)
+    title.left = Inches(0.5)
     
     subtitle = slide.placeholders[1]
     subtitle.text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
+    subtitle.width = Inches(5.0)
+    subtitle.left = Inches(0.5)
     for p in subtitle.text_frame.paragraphs:
         p.font.name = 'Segoe UI'
         p.font.color.rgb = RGBColor(80, 80, 80)
+        p.line_spacing = 1.2
     
     # 2. Abstract & Overview
     add_slide(prs, "Abstract & Overview", [
