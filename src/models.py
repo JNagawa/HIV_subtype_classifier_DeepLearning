@@ -27,9 +27,7 @@ class HIV_MLP(nn.Module):
         features = self.feature_extractor(x)
         return self.classifier(features)
 
-mlp_model = HIV_MLP(num_classes).to(device)
-total_params = sum(p.numel() for p in mlp_model.parameters())
-print(f"MLP Baseline — Parameters: {total_params:,}")
+
 
 class HIV_CNN(nn.Module):
     """1D-CNN for HIV pol gene subtype classification."""
@@ -53,12 +51,7 @@ class HIV_CNN(nn.Module):
     def forward(self, x):
         return self.fc(self.conv(x))
 
-# Train CNN
-MAX_LENGTH = 3000 # Set MAX_LENGTH explicitly for CNN input
-train_dl, val_dl, test_dl = make_loaders('onehot')
-cnn_model = HIV_CNN(num_classes).to(device)
-cnn_history = train_model(cnn_model, train_dl, val_dl, 'HIV_CNN',
-                          epochs=20, lr=1e-3, patience=5)
+
 
 class HIV_BiLSTM(nn.Module):
     """Bidirectional LSTM for HIV pol gene subtype classification."""
@@ -79,11 +72,7 @@ class HIV_BiLSTM(nn.Module):
         out = torch.cat([h[-2], h[-1]], dim=1)
         return self.fc(self.dropout(out))
 
-# Train BiLSTM
-train_dl_lbl, val_dl_lbl, test_dl_lbl = make_loaders('label')
-lstm_model = HIV_BiLSTM(num_classes, vocab=6).to(device)
-lstm_history = train_model(lstm_model, train_dl_lbl, val_dl_lbl, 'HIV_BiLSTM',
-                           epochs=30, lr=5e-4, patience=5)
+
 
 def get_model(model_name, num_classes=4, dropout=0.3, device='cpu'):
     models = {
