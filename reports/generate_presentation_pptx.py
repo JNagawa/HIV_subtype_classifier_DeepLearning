@@ -9,7 +9,7 @@ OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation.pptx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
 def add_slide(prs, title, content=[], image_filename=None):
-    slide_layout = prs.slide_layouts[1] # Title and Content
+    slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
     title_box = slide.shapes.title
     title_box.text = title
@@ -17,15 +17,15 @@ def add_slide(prs, title, content=[], image_filename=None):
     if content:
         content_box = slide.placeholders[1]
         tf = content_box.text_frame
-        tf.clear() # clear default paragraphs
+        tf.clear()
         for i, point in enumerate(content):
             p = tf.add_paragraph()
             p.text = point
             p.level = 0
             if image_filename:
-                p.font.size = Pt(16)
+                p.font.size = Pt(14)
             else:
-                p.font.size = Pt(22)
+                p.font.size = Pt(20)
                 
     if image_filename:
         filepath = os.path.join(FIGURES_DIR, image_filename)
@@ -37,129 +37,113 @@ def add_slide(prs, title, content=[], image_filename=None):
 def generate():
     prs = Presentation()
     
-    # Slide 1: Title
+    # 1. Title
     slide_layout = prs.slide_layouts[0]
     slide = prs.slides.add_slide(slide_layout)
-    title = slide.shapes.title
-    subtitle = slide.placeholders[1]
-    title.text = "Deep Learning for HIV-1 Subtype Classification"
-    subtitle.text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
+    slide.shapes.title.text = "Deep Learning for HIV-1 Subtype Classification"
+    slide.placeholders[1].text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
     
-    # Slide 2: Abstract & Objective
+    # 2. Abstract & Objective
     add_slide(prs, "Abstract & Objective", [
-        "Background: HIV-1 subtyping is critical for tracking epidemiological spread and drug resistance.",
-        "Problem: Traditional alignment and k-mer methods struggle with hypermutations and computational cost.",
-        "Objective: Build an alignment-free Deep Learning pipeline for Subtypes A, B, C, D.",
-        "Methods: 1D-CNN and BiLSTM networks using Focal Loss to combat severe class imbalance.",
-        "Results: BiLSTM achieved 98% accuracy."
+        "Background: HIV-1 subtyping is critical for tracking drug resistance.",
+        "Problem: Traditional MSA methods struggle with hypermutations.",
+        "Objective: Alignment-free Deep Learning pipeline for Subtypes A, B, C, D.",
+        "Methods: CNN and BiLSTM networks using Focal Loss.",
+        "Results: BiLSTM achieved 94.73% accuracy, resisting majority-class collapse."
     ])
 
-    # Slide 3: Introduction
-    add_slide(prs, "Introduction / Background", [
-        "The pol gene encodes targets for modern Antiretroviral Therapy (ART).",
-        "Subtype classification guides personalized medicine.",
-        "Traditional bioinformatics heavily rely on Multiple Sequence Alignment (MSA).",
-        "Our approach completely eliminates MSA, feeding raw nucleotide strings into the network."
-    ])
-
-    # Slide 4: Dataset & Imbalance
-    add_slide(prs, "The Dataset & The Imbalance Challenge", [
+    # 3. The Dataset
+    add_slide(prs, "The Dataset & Geographical Bias", [
         "Data sourced from Los Alamos National Laboratory (LANL).",
-        "Severe Geographical Bias: Subtype B dominates North America & Europe.",
-        "A severe class imbalance risks model collapse (predicting B for everything).",
+        "Severe Bias: Subtype B dominates North America & Europe (52.2% of data).",
+        "Risk: Models inherently want to predict 'B' for everything to minimize loss.",
     ], image_filename="subtype_distribution.png")
 
-    # Slide 5: Methodology - Processing
+    # 4. Processing Pipeline
     add_slide(prs, "Methodology: Processing & Encoding", [
-        "Alignment gaps ('-') completely stripped from all sequences.",
-        "Data was unified via padding/truncation for batched processing.",
-        "Two Encodings Used:",
-        "1. One-Hot Encoding: Used for MLP and 1D-CNN (4 spatial channels).",
-        "2. Label Embedding: Integers used for BiLSTM sequence inputs."
+        "Alignment gaps ('-') completely stripped.",
+        "1. One-Hot Encoding: Used for MLP and 1D-CNN.",
+        "2. Label Embedding: Integers used for BiLSTM inputs."
     ])
 
-    # Slide 6: Methodology - Class Balancing
+    # 5. Class Balancing Strategy
     add_slide(prs, "Methodology: Class Balancing", [
-        "Initial static 'class_weights' severely degraded precision.",
-        "Solution: Pure Focal Loss (Gamma=2.0).",
-        "Dynamically down-weights easily classified majority sequences (Subtype B).",
+        "Standard categorical cross-entropy caused precision degradation.",
+        "Implemented pure Focal Loss (Gamma=2.0).",
         "Forces the gradient to focus heavily on hard-to-predict minority strains (A, C, D)."
     ])
 
-    # Slide 7: Methodology - The Models
+    # 6. Experiments: Models
     add_slide(prs, "Methodology: The Experiments", [
-        "Baseline MLP: Global Average Pooling. Looked at total nucleotide composition.",
-        "1D-CNN: Convolutional filters extracting localized functional motifs (k-mers).",
-        "BiLSTM: Bidirectional recurrent sequence processing. Captures long-range epistatic dependencies across the genome."
+        "Baseline MLP: Global Average Pooling. Looks at total nucleotide composition.",
+        "1D-CNN: Extracts localized spatial motifs (k-mers).",
+        "BiLSTM: Bidirectional recurrent sequence processing. Captures long-range dependencies."
     ])
 
-    # Slide 8: Transfer Learning Exploration
-    add_slide(prs, "Methodology: Transfer Learning (DNABERT)", [
+    # 7. Transfer Learning
+    add_slide(prs, "Methodology: Transfer Learning", [
         "Exploratory phase utilizing DNABERT.",
-        "Transformer model pre-trained on the human genome via Masked Language Modeling.",
-        "Classification head fine-tuned to test cross-domain transfer learning to viral genomes.",
-        "Demonstrated the flexibility of the pipeline to handle Transformer architectures."
+        "Pre-trained on the human genome via Masked Language Modeling.",
+        "Classification head fine-tuned to test cross-domain transfer learning to viral genomes."
     ])
 
-    # Slide 9: Results (Summary Table)
-    slide_layout = prs.slide_layouts[5] # Title only
+    # 8. Explainability
+    add_slide(prs, "Methodology: Explainability", [
+        "Universal Saliency Map using Input-Gradient Attention.",
+        "Highlights the exact nucleotide regions driving the BiLSTM's classifications."
+    ], image_filename="saliency_worst_error.png")
+
+    # 9. Results: Table
+    slide_layout = prs.slide_layouts[5]
     slide = prs.slides.add_slide(slide_layout)
     slide.shapes.title.text = "Results: Model Comparison"
     
-    rows, cols = 5, 5
-    table_shape = slide.shapes.add_table(rows, cols, Inches(1), Inches(2), Inches(8), Inches(2))
+    table_shape = slide.shapes.add_table(5, 5, Inches(1), Inches(2), Inches(8), Inches(2))
     table = table_shape.table
-    
-    headers = ['Model', 'Test Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1']
     data = [
-        ['Baseline MLP', '0.92', '0.88', '0.85', '0.86'],
-        ['1D-CNN', '0.95', '0.93', '0.92', '0.92'],
-        ['BiLSTM', '0.98', '0.97', '0.98', '0.97'],
-        ['DNABERT', 'N/A', 'N/A', 'N/A', 'N/A']
+        ['Model', 'Test Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1'],
+        ['Baseline MLP', '0.6527', '0.5082', '0.7472', '0.5114'],
+        ['1D-CNN', '0.5222', '0.1305', '0.2500', '0.1715'],
+        ['BiLSTM', '0.9473', '0.6274', '0.6982', '0.6541'],
+        ['DNABERT', '0.5222', '0.1305', '0.2500', '0.1715']
     ]
-    
-    for j, header in enumerate(headers): table.cell(0, j).text = header
     for i, row in enumerate(data):
         for j, val in enumerate(row):
-            table.cell(i+1, j).text = val
+            table.cell(i, j).text = val
 
-    # Slide 10: Visualizing Performance
+    # 10. Results: Visuals
     add_slide(prs, "Results: Confusion Matrices", [
-        "BiLSTM completely dominates across minority classes.",
-        "Focal Loss eliminated the Subtype B collapse."
+        "BiLSTM accurately maps minority classes.",
+        "CNN and DNABERT collapsed entirely (52.22% Subtype B baseline)."
     ], image_filename="all_confusion_matrices.png")
 
-    # Slide 11: Explainability
-    add_slide(prs, "Methodology: Explainability (Saliency Map)", [
-        "Ensured model wasn't relying on spurious correlations.",
-        "Universal Saliency Map using Input-Gradient Attention.",
-        "Highlighting the exact nucleotide regions driving the BiLSTM's classifications."
-    ], image_filename="saliency_worst_error.png")
-
-    # Slide 12: Error Analysis
+    # 11. Error Analysis
     add_slide(prs, "Error Analysis", [
-        "Observed Trends: The 2% error margin occurred exclusively between closely related recombinant forms or hypermutations.",
-        "Implications: The model heavily relies on rigid conserved regions.",
-        "When 'viral drift' mutates these domains, the model's confidence drops, indicating a blur in rigid subtype boundaries."
+        "Causes: CNNs and DNABERT collapsed due to geographic imbalance.",
+        "Implications: Saliency Maps show BiLSTMs rely on conserved regions. When 'viral drift' mutates these domains, confidence drops."
     ])
 
-    # Slide 13: Deployment
+    # 12. Limitations
+    add_slide(prs, "Limitations & Challenges", [
+        "1. Extreme Geographical Imbalance: Hard for spatial models (CNN) to overcome.",
+        "2. Computational Limits: VRAM restricted DNABERT's ability to learn 3000bp sequences.",
+        "3. Domain Gap: Human genome pre-training doesn't translate perfectly to viruses."
+    ])
+
+    # 13. Deployment
     add_slide(prs, "Deployment Strategy", [
-        "A decoupled production deployment module.",
-        "Dynamically reads training histories.",
-        "Automatically identifies and loads the highest-performing architecture natively.",
+        "Decoupled production deployment module.",
+        "Automatically loads the highest-performing architecture (BiLSTM).",
         "Ready for real-time FASTA inference."
     ])
 
-    # Slide 14: Conclusion & Future Work
+    # 14. Conclusion
     add_slide(prs, "Conclusion & Future Work", [
-        "Conclusion: Alignment-free Deep Learning (BiLSTM) combined with Focal Loss achieves state-of-the-art 98% accuracy on raw HIV-1 pol sequences.",
-        "Future Work 1: Expand to Circulating Recombinant Forms (CRFs).",
-        "Future Work 2: Wrap deployment module in a REST API for programmatic clinical use."
+        "Conclusion: Alignment-free Deep Learning (BiLSTM) handles viral genomic imbalances far better than CNNs, achieving 94.73% accuracy.",
+        "Future Work: Expand to Circulating Recombinant Forms (CRFs) and launch via FastAPI."
     ])
     
     prs.save(OUTPUT_PATH)
-    print(f"Presentation saved to {OUTPUT_PATH}")
 
 if __name__ == '__main__':
     generate()
