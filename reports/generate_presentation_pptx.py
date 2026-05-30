@@ -59,21 +59,48 @@ def generate():
         "These IDs were fed into the LANL HIV Sequence Database to batch download the raw FASTA sequences.",
         "Sequences were then strictly filtered to our 4 target classes: Subtypes A, B, C, and D.",
         "Severe Bias: Subtype B heavily dominates the final dataset (52.2%)."
-    ], image_filename="subtype_distribution.png", image_left=4.5)
-
-    # 4. Processing Pipeline
-    add_slide(prs, "Methodology: Processing & Encoding", [
-        "Alignment gaps ('-') completely stripped.",
-        "1. One-Hot Encoding: Used for MLP and 1D-CNN.",
-        "2. Label Embedding: Integers used for BiLSTM inputs."
-    ], image_filename="subtype_distribution.png", image_left=4.5)
-
-    # 5. Class Balancing Strategy
-    add_slide(prs, "Methodology: Class Balancing", [
-        "Standard categorical cross-entropy caused precision degradation.",
-        "Implemented pure Focal Loss (Gamma=2.0).",
-        "Forces the gradient to focus heavily on hard-to-predict minority strains (A, C, D)."
     ])
+
+    # 4. Processing & Class Balancing (Two Columns)
+    slide_layout = prs.slide_layouts[3] # Two content layout
+    slide = prs.slides.add_slide(slide_layout)
+    slide.shapes.title.text = "Methodology: Processing & Class Balancing"
+    
+    # Left Column
+    left_box = slide.placeholders[1]
+    left_tf = left_box.text_frame
+    left_tf.text = "Gap Splitting & Encoding"
+    for text in [
+        "Alignment gaps ('-') completely stripped. Sequences padded to 3000bp.",
+        "Before: 'A-T-C' -> After: 'ATC' -> [1, 4, 2, 0...]",
+        "One-Hot Encoding: Used for MLP and 1D-CNN.",
+        "Label Embedding: Integer mapping used for BiLSTM."
+    ]:
+        p = left_tf.add_paragraph()
+        p.text = f"• {text}"
+        p.font.size = Pt(16)
+        
+    filepath_len = os.path.join(FIGURES_DIR, "sequence_lengths.png")
+    if os.path.exists(filepath_len):
+        slide.shapes.add_picture(filepath_len, Inches(0.5), Inches(4.5), width=Inches(4.0))
+
+    # Right Column
+    right_box = slide.placeholders[2]
+    right_tf = right_box.text_frame
+    right_tf.text = "Addressing Class Imbalance"
+    for text in [
+        "Subtype B severely dominates the data.",
+        "Standard cross-entropy caused precision collapse.",
+        "Solution: Pure Focal Loss (Gamma=2.0).",
+        "Forces gradient to focus on hard-to-predict minority strains (A, C, D)."
+    ]:
+        p = right_tf.add_paragraph()
+        p.text = f"• {text}"
+        p.font.size = Pt(16)
+        
+    filepath_dist = os.path.join(FIGURES_DIR, "subtype_distribution.png")
+    if os.path.exists(filepath_dist):
+        slide.shapes.add_picture(filepath_dist, Inches(5.2), Inches(4.5), width=Inches(4.0))
 
     # 6. Experiments: Models & Architecture
     add_slide(prs, "Methodology: Architectures", [
