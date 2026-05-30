@@ -1,0 +1,159 @@
+# 🚀 Notebook 06: Model Deployment (Web App)
+
+This notebook launches the **Gradio** web interface for our HIV-1 Subtype Classifier.
+
+By running this notebook, you will instantly get a public URL (`https://...gradio.live`) that you can share with colleagues. They can use it to paste nucleotide sequences and get live predictions!
+!pip install gradio -q
+## Workspace & Environment Setup
+Mounts Google Drive to access persistent project directories and configures the compute device.
+import os
+import numpy as np
+import torch
+import torch.nn as nn
+import gradio as gr
+import sys
+
+# Mount Google Drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Project paths
+projectdir = '/content/drive/MyDrive/Deep Learning/hiv-subtype-classifier_final'
+models_dir = os.path.join(projectdir, 'models')
+sys.path.append(os.path.join(projectdir, 'src'))
+
+# Import the model architecture dynamically (just like Notebook 05)
+from models import get_model
+## Device setup and model loading
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
+
+# Settings
+NUM_CLASSES = 4
+IDX_TO_LABEL = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
+NUC_TO_IDX = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+NUM_CHANNELS = 4
+
+MC_PASSES = 10
+UNCERTAINTY_STD = 0.15
+MIN_CONFIDENCE = 0.70
+
+# Load the best BiLSTM Model
+model_path = os.path.join(models_dir, 'HIV_BiLSTM_best.pth')
+model = get_model('bilstm', num_classes=NUM_CLASSES, device=device)
+
+if os.path.exists(model_path):
+    ckpt = torch.load(model_path, map_location=device)
+
+    # Adapt keys from old state_dict to new model architecture
+    new_state_dict = {}
+    for k, v in ckpt['state_dict'].items():
+        if k.startswith('fc.'):
+            new_k = k.replace('fc.', 'classifier.')
+        else:
+            new_k = k
+
+        # Exclude num_batches_tracked if they are not expected by the current model
+        if '.num_batches_tracked' not in new_k:
+            new_state_dict[new_k] = v
+
+    # Load the modified state_dict, allowing for some non-strict matching
+    model.load_state_dict(new_state_dict, strict=False)
+    print("Model loaded successfully!")
+else:
+    print(f"WARNING: Model not found at {model_path}. Please run training first.")
+## Deployment
+def encode_sequence(seq_text):
+    lines = seq_text.strip().split('\n')
+    seq = ''
+    for line in lines:
+        line = line.strip()
+        if line.startswith('>'): continue
+        seq += ''.join(c for c in line.upper() if c in 'ACGTNRYSWKMBDHV-')
+
+    seq = seq.replace('-', '').replace('.', '')
+    seq = ''.join(c if c in 'ACGT' else 'N' for c in seq)
+
+    if len(seq) < 100:
+        return None, "Sequence too short. Please provide at least 100 nucleotides."
+
+    seq_len = len(seq)
+    encoded = np.zeros((NUM_CHANNELS, seq_len), dtype=np.float32)
+    for i, nuc in enumerate(seq):
+        idx = NUC_TO_IDX.get(nuc)
+        if idx is not None:
+            encoded[idx, i] = 1.0
+    return torch.tensor(encoded).unsqueeze(0), None
+
+def enable_mc_dropout(model):
+    for module in model.modules():
+        if isinstance(module, nn.Dropout):
+            module.train()
+
+def mc_dropout_predict(encoded, n_passes=MC_PASSES):
+    model.eval()
+    enable_mc_dropout(model)
+
+    all_probs = []
+    encoded = encoded.to(device)
+
+    for _ in range(n_passes):
+        with torch.no_grad():
+            logits = model(encoded)
+            probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
+            all_probs.append(probs)
+
+    all_probs = np.array(all_probs)
+    mean_probs = all_probs.mean(axis=0)
+    std_probs = all_probs.std(axis=0)
+
+    is_uncertain = (std_probs.max() > UNCERTAINTY_STD) or (mean_probs.max() < MIN_CONFIDENCE)
+    return mean_probs, std_probs, is_uncertain
+
+def classify_sequence(sequence_text):
+    if not sequence_text or len(sequence_text.strip()) < 10:
+        return {"Error": "Please paste a valid HIV-1 nucleotide sequence."}
+
+    encoded, error = encode_sequence(sequence_text)
+    if error: return {"Error": error}
+
+    mean_probs, std_probs, is_uncertain = mc_dropout_predict(encoded)
+
+    if is_uncertain:
+        predicted_idx = mean_probs.argmax()
+        predicted_label = IDX_TO_LABEL[predicted_idx]
+        return {
+            f"⚠️ Indeterminate (leaning {predicted_label})": float(mean_probs.max()),
+            "High uncertainty detected": float(std_probs.max()),
+            "Recommendation": 0.0,
+        }
+
+    result = {}
+    for idx in range(NUM_CLASSES):
+        result[IDX_TO_LABEL[idx]] = float(mean_probs[idx])
+    return result
+## Deployment Interface
+Configures and launches a Gradio web interface for interactive model inference.
+EXAMPLE_SEQ = """>Example_HIV1_sequence\nATGGGTGCGAGAGCGTCAGTATTAAGCGGGGGAGAATTAGATCGATGGGAAAAAATTCGGTTAAGGCCAGGGGGAAAGAAAAAATATAAATTAAAACATATAGTATGGGCAAGCAGGGAGCTAGAACGATTCGCAGTTAATCCTGGCCTGTTAGAAACATCAGAAGGCTGTAGACAAATACTGGGACAGCTACAACCATCCCTTCAGACAGGATCAGAAGAACTTAGATCATTATATAATACA"""
+
+description = """
+## 🧬 HIV-1 Subtype Classifier\n
+Paste an HIV-1 nucleotide sequence (pol gene region) to predict the subtype. Supports FASTA format or raw sequence.\n
+**No alignment required** — works directly on raw nucleotide sequences.\n
+**Subtypes:** A, B, C, D\n
+**Model:** BiLSTM with Monte Carlo Dropout uncertainty estimation, trained on LANL HIV Database pol gene sequences using Focal Loss.
+"""
+
+iface = gr.Interface(
+    fn=classify_sequence,
+    inputs=gr.Textbox(label="HIV-1 Nucleotide Sequence", placeholder="Paste your sequence here...", lines=10, value=EXAMPLE_SEQ),
+    outputs=gr.Label(num_top_classes=NUM_CLASSES, label="Predicted Subtype"),
+    title="HIV-1 Subtype Classifier",
+    description=description,
+    examples=[[EXAMPLE_SEQ]],
+    theme=gr.themes.Soft(),
+    flagging_mode="never",
+)
+
+# Launch the app with share=True to generate a public link
+iface.launch(share=True, debug=True, inline=False)

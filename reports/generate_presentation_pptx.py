@@ -206,6 +206,12 @@ def generate():
         "The Receiver Operating Characteristic confirms the BiLSTM's high true positive rate across all four classes.",
     ], image_filename="best_model_roc.png", image_width=5.0, image_left=4.5)
 
+    # 10c. Results: Per-Class Metrics
+    add_slide(prs, 'Results: Per-Class Metrics', [
+        'The BiLSTM achieved extremely high precision and recall across all major classes.',
+        'Subtype D (minority) remains challenging due to lack of representative data.'
+    ], image_filename='best_model_per_class_metrics.png', image_width=5.5, image_left=4.0)
+
     # 11. Error Analysis
     add_slide(prs, "Error Analysis", [
         "Causes: CNNs and DNABERT collapsed due to geographic imbalance.",
