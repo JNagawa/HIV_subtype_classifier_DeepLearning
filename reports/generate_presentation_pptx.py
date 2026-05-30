@@ -8,24 +8,32 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_PATH = os.path.join(SCRIPT_DIR, 'presentation.pptx')
 FIGURES_DIR = os.path.join(SCRIPT_DIR, 'figures')
 
+def style_title(slide):
+    if slide.shapes.title:
+        title = slide.shapes.title
+        title.fill.solid()
+        title.fill.fore_color.rgb = RGBColor(20, 50, 90)
+        for p in title.text_frame.paragraphs:
+            p.font.color.rgb = RGBColor(255, 255, 255)
+            p.font.name = 'Segoe UI'
+            p.font.bold = True
+
 def add_slide(prs, title, content=[], image_filename=None, image_width=5.0, image_left=4.5, image_top=1.5):
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
-    title_box = slide.shapes.title
-    title_box.text = title
+    slide.shapes.title.text = title
+    style_title(slide)
     
     if content:
         content_box = slide.placeholders[1]
         tf = content_box.text_frame
         tf.clear()
-        for i, point in enumerate(content):
+        for point in content:
             p = tf.add_paragraph()
-            p.text = point
+            p.text = f"• {point}"
             p.level = 0
-            if image_filename:
-                p.font.size = Pt(14)
-            else:
-                p.font.size = Pt(20)
+            p.font.name = 'Segoe UI'
+            p.font.size = Pt(18)
                 
     if image_filename:
         filepath = os.path.join(FIGURES_DIR, image_filename)
@@ -40,8 +48,17 @@ def generate():
     # 1. Title
     slide_layout = prs.slide_layouts[0]
     slide = prs.slides.add_slide(slide_layout)
-    slide.shapes.title.text = "Deep Learning for HIV-1 Subtype Classification"
-    slide.placeholders[1].text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
+    title = slide.shapes.title
+    title.text = "Deep Learning for HIV-1 Subtype Classification"
+    title.text_frame.paragraphs[0].font.name = 'Segoe UI'
+    title.text_frame.paragraphs[0].font.bold = True
+    title.text_frame.paragraphs[0].font.color.rgb = RGBColor(20, 50, 90)
+    
+    subtitle = slide.placeholders[1]
+    subtitle.text = "A BiLSTM and Focal Loss Approach on unaligned pol Gene Sequences\nMSB7216: Deep Learning for Health Data"
+    for p in subtitle.text_frame.paragraphs:
+        p.font.name = 'Segoe UI'
+        p.font.color.rgb = RGBColor(80, 80, 80)
     
     # 2. Abstract & Overview
     add_slide(prs, "Abstract & Overview", [
@@ -65,6 +82,7 @@ def generate():
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
     slide.shapes.title.text = "Methodology: Processing & Encoding"
+    style_title(slide)
     
     content_box = slide.placeholders[1]
     tf = content_box.text_frame
@@ -98,6 +116,7 @@ def generate():
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
     slide.shapes.title.text = "Methodology: Data Splitting & Class Balancing"
+    style_title(slide)
     
     content_box = slide.placeholders[1]
     tf = content_box.text_frame
@@ -140,6 +159,7 @@ def generate():
     slide_layout = prs.slide_layouts[5]
     slide = prs.slides.add_slide(slide_layout)
     slide.shapes.title.text = "Results: Model Comparison"
+    style_title(slide)
     
     table_shape = slide.shapes.add_table(5, 5, Inches(1), Inches(2), Inches(8), Inches(2))
     table = table_shape.table
